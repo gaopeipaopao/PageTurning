@@ -125,6 +125,11 @@ public class PageTurnView extends View{
     private Paint paintB;
 
     /**
+     * 是否触摸
+     */
+    private boolean touch;
+
+    /**
      *
      * @param context
      * @param attrs
@@ -135,6 +140,8 @@ public class PageTurnView extends View{
 
     public PageTurnView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
+        touch = true;
 
         paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
@@ -173,8 +180,6 @@ public class PageTurnView extends View{
         k = new PointF(0,0);
         d = new PointF(0,0);
         i = new PointF(0,0);
-
-
     }
 
     @Override
@@ -182,22 +187,40 @@ public class PageTurnView extends View{
         super.onSizeChanged(w, h, oldw, oldh);
         Log.d(TAG,"width:"+w);
         Log.d(TAG,"height:"+h);
-        a.x = 800;
-        a.y = 1100;
-        f.x = w;
-        f.y = h;
+        a.x = w;
+        a.y = h;
     }
+
 
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-//        a.x = 600;
-//        a.y = 600;
+        Log.d(TAG,"cc");
+        touch = false;
+        a.x = event.getX();
+        a.y = event.getY();
+        if (a.y <= getHeight() / 3){
+            f.x = getWidth();
+            f.y = 0;
+        }else if (a.y > getHeight() * 2 / 3 && a.y <= getHeight()) {
+            f.x = getWidth();
+            f.y = getHeight();
+        }
+        switch (event.getAction()){
+            case MotionEvent.ACTION_MOVE:
+                invalidate();
+                Log.d(TAG,"ababbaba");
+                return true;
+            case MotionEvent.ACTION_UP:
+                touch = true;
+                invalidate();
+                return true;
+        }
 
-//        f.x = getWidth();
-//        f.y = getHeight();
+        invalidate();
+        Log.d(TAG,"a.x:"+a.x);
 
         return true;
     }
@@ -208,22 +231,57 @@ public class PageTurnView extends View{
 
         caclData();
 
-
         bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
         bitmapCanvas = new Canvas(bitmap);
-        //画A区域
-        bitmapCanvas.drawPath(drawA(),paintA);
-        //画C区域
-        bitmapCanvas.drawPath(drawC(),paintC);
-        //画B区域
-        bitmapCanvas.drawPath(drawB(),paintB);
+        if (touch){
+            Log.d(TAG,"aa");
+            bitmapCanvas.drawPath(drawA(),paintA);
+        }else {
+            Log.d(TAG,"bb");
+            //画A区域
+            if (f.y == 0){
+                bitmapCanvas.drawPath(drawARightTop(),paintA);
+            }else {
+                bitmapCanvas.drawPath(drawARightBottom(),paintA);
+            }
+            //画C区域
+            bitmapCanvas.drawPath(drawC(),paintC);
+            //画B区域
+            bitmapCanvas.drawPath(drawB(),paintB);
+        }
 
         //在画布上导入已经有了的bitmap图片，null表示没有画笔
         canvas.drawBitmap(bitmap,0,0,null);
 
 
     }
-    private Path drawA() {
+
+    private Path drawA(){
+        pathB.reset();
+        pathB.moveTo(0,0);
+        pathB.lineTo(0,getHeight());
+        pathB.lineTo(getWidth(),getHeight());
+        pathB.lineTo(getWidth(),0);
+        pathB.close();
+        return pathB;
+    }
+
+    private Path drawARightTop(){
+        pathA.reset();
+        pathA.moveTo(0,0);
+        pathA.lineTo(c.x,c.y);
+        pathA.quadTo(e.x,e.y,b.x,b.y);
+        pathA.lineTo(a.x,a.y);
+        pathA.lineTo(k.x,k.y);
+        pathA.quadTo(h.x,h.y,j.x,j.y);
+        pathA.lineTo(getWidth(),getHeight());
+        pathA.lineTo(0,getHeight());
+        pathA.close();
+        return pathA;
+    }
+
+    private Path drawARightBottom() {
+        pathA.reset();
         pathA.moveTo(0,0);
         pathA.lineTo(0,getHeight());
         pathA.lineTo(c.x,c.y);
@@ -238,6 +296,7 @@ public class PageTurnView extends View{
 
     private Path drawC() {
 
+        pathC.reset();
         pathC.moveTo(d.x,d.y);
         pathC.lineTo(i.x,i.y);
         pathC.lineTo(a.x,a.y);
@@ -246,6 +305,7 @@ public class PageTurnView extends View{
     }
 
     private Path drawB() {
+        pathB.reset();
         pathB.moveTo(0,0);
         pathB.lineTo(0,getHeight());
         pathB.lineTo(getWidth(),getHeight());
@@ -283,6 +343,7 @@ public class PageTurnView extends View{
 
         i.x = ((k.x + j.x)/2 + h.x)/2;
         i.y = ((k.y + j.y)/2 + h.y)/2;
+
 
         Log.d(TAG,"a.x:"+a.x);
         Log.d(TAG,"f.x:"+f.x);
