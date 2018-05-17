@@ -154,6 +154,11 @@ public class PageTurnView extends View{
     private boolean bRightBottom;
 
     /**
+     * 横向进行翻页,进行横向翻页时，f.x = getWidth,f.y = getHeight;
+     */
+    private boolean bOrientation;
+
+    /**
      *
      * @param context
      * @param attrs
@@ -168,6 +173,7 @@ public class PageTurnView extends View{
         cMax = false;
         bRightBottom = false;
         bRightBottom = false;
+        bOrientation = false;
 
 
         paint = new Paint();
@@ -224,10 +230,12 @@ public class PageTurnView extends View{
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        Log.d(TAG,"cc");
+      //  Log.d(TAG,"cc");
 
         float x = event.getX();
         float y = event.getY();
+        Log.d(TAG,"x:"+x);
+        Log.d(TAG,"y:"+y);
 
 
 
@@ -236,6 +244,8 @@ public class PageTurnView extends View{
             touch = false;
             if (y <= getHeight() / 3){
                 bRightTop = true;
+            } else if (y > getHeight() / 3 && y <= getHeight() * 2 / 3){
+                bOrientation = true;
             } else if (y > getHeight() * 2 / 3 && y <= getHeight()) {
                 bRightBottom = true;
             }
@@ -248,10 +258,13 @@ public class PageTurnView extends View{
             f.x = getWidth();
             f.y = getHeight();
         }
-        Log.d(TAG,"a.y:"+a.y);
 
         a.x = x;
         a.y = y;
+
+
+        Log.d(TAG,"a.y:"+a.y);
+
         caclData();
 
         if (caclCX(x,y,f) < 0){
@@ -259,6 +272,18 @@ public class PageTurnView extends View{
             caclCrisisA();
             caclData();
         }
+
+        if (bOrientation){
+            Log.d(TAG,"ccc");
+            a.y = getHeight() - 3;
+            f.x = getWidth();
+            f.y = getHeight();
+            caclData();
+            postInvalidate();
+
+        }
+
+
 
         switch (event.getAction()){
             case MotionEvent.ACTION_MOVE:
@@ -270,12 +295,11 @@ public class PageTurnView extends View{
                 cMax = false;
                 bRightBottom = false;
                 bRightTop = false;
+                bOrientation = false;
                 invalidate();
                 return true;
         }
 
-        invalidate();
-        Log.d(TAG,"a.x:"+a.x);
 
         return true;
     }
@@ -287,10 +311,10 @@ public class PageTurnView extends View{
         bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
         bitmapCanvas = new Canvas(bitmap);
         if (touch){
-            Log.d(TAG,"aa");
+          //  Log.d(TAG,"aa");
             bitmapCanvas.drawPath(drawA(),paintA);
         }else {
-            Log.d(TAG,"bb");
+          //  Log.d(TAG,"bb");
             //画A区域
             if (f.y == 0){
                 bitmapCanvas.drawPath(drawARightTop(),paintA);
@@ -429,16 +453,25 @@ public class PageTurnView extends View{
 
 
         Log.d(TAG,"a.x:"+a.x);
+        Log.d(TAG,"a.y:"+a.y);
         Log.d(TAG,"f.x:"+f.x);
         Log.d(TAG,"g.x:"+g.x);
         Log.d(TAG,"e.x:"+e.x);
+        Log.d(TAG,"e.y:"+e.y);
         Log.d(TAG,"h.x:"+h.x);
+        Log.d(TAG,"h.y:"+h.y);
         Log.d(TAG,"c.x:"+c.x);
+        Log.d(TAG,"c.y:"+c.y);
         Log.d(TAG,"j.x:"+j.x);
+        Log.d(TAG,"j.y:"+j.y);
         Log.d(TAG,"d.x:"+d.x);
+        Log.d(TAG,"d.y:"+d.y);
         Log.d(TAG,"i.x:"+i.x);
+        Log.d(TAG,"i.y:"+i.y);
         Log.d(TAG,"b.x:"+b.x);
+        Log.d(TAG,"b.y:"+b.y);
         Log.d(TAG,"k.x:"+k.x);
+        Log.d(TAG,"k.y:"+k.y);
 
     }
 
