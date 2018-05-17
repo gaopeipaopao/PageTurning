@@ -125,9 +125,24 @@ public class PageTurnView extends View{
     private Paint paintB;
 
     /**
-     * 是否触摸
+     * 是否触摸，第一次触摸
      */
     private boolean touch;
+
+    /**
+     *判断c.x是否大于0，是否达到最大距离,达到翻动的最大距离时，cMax为true;
+     */
+    private boolean cMax;
+
+    /**
+     * 右上,当rightTop为true时，说明翻动为右上
+     */
+    private boolean bRightTop;
+
+    /**
+     * 右下，当rightBottom为true时，说明翻动为右下
+     */
+    private boolean bRightBottom;
 
     /**
      *
@@ -137,11 +152,14 @@ public class PageTurnView extends View{
 
 
 
-
     public PageTurnView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         touch = true;
+        cMax = false;
+        bRightBottom = false;
+        bRightBottom = false;
+
 
         paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
@@ -198,15 +216,38 @@ public class PageTurnView extends View{
     public boolean onTouchEvent(MotionEvent event) {
 
         Log.d(TAG,"cc");
-        touch = false;
+
+//        if (!cMax){
+//            a.x = event.getX();
+//            a.y = event.getY();
+//        }
         a.x = event.getX();
         a.y = event.getY();
-        if (a.y <= getHeight() / 3){
+
+
+        //只判断一次，在第一次触摸时就会判断是右上翻动还是右下翻动
+        if (touch) {
+            touch = false;
+            if (a.y <= getHeight() / 3){
+                bRightTop = true;
+            } else if (a.y > getHeight() * 2 / 3 && a.y <= getHeight()) {
+                bRightBottom = true;
+            }
+        }
+        if (bRightTop){
             f.x = getWidth();
             f.y = 0;
-        }else if (a.y > getHeight() * 2 / 3 && a.y <= getHeight()) {
+        }
+        if (bRightBottom){
             f.x = getWidth();
             f.y = getHeight();
+        }
+        Log.d(TAG,"a.y:"+a.y);
+
+
+        caclData();
+        if (c.x < 0){
+            cMax = true;
         }
         switch (event.getAction()){
             case MotionEvent.ACTION_MOVE:
@@ -215,6 +256,8 @@ public class PageTurnView extends View{
                 return true;
             case MotionEvent.ACTION_UP:
                 touch = true;
+                bRightBottom = false;
+                bRightTop = false;
                 invalidate();
                 return true;
         }
@@ -228,8 +271,6 @@ public class PageTurnView extends View{
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
-        caclData();
 
         bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
         bitmapCanvas = new Canvas(bitmap);
