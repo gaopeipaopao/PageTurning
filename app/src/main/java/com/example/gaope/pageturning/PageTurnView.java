@@ -1,5 +1,6 @@
 package com.example.gaope.pageturning;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -15,8 +16,10 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
+import android.widget.Scroller;
 
 /**
  * 限制右侧最大的翻页距离
@@ -159,6 +162,11 @@ public class PageTurnView extends View{
     private boolean bOrientation;
 
     /**
+     * 弹性的滑动
+     */
+    private Scroller scroller;
+
+    /**
      *
      * @param context
      * @param attrs
@@ -175,6 +183,7 @@ public class PageTurnView extends View{
         bRightBottom = false;
         bOrientation = false;
 
+        scroller = new Scroller(getContext(),new LinearInterpolator());
 
         paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
@@ -291,18 +300,36 @@ public class PageTurnView extends View{
                 Log.d(TAG,"ababbaba");
                 return true;
             case MotionEvent.ACTION_UP:
-                touch = true;
                 cMax = false;
                 bRightBottom = false;
                 bRightTop = false;
                 bOrientation = false;
+                //让a滑动到f点所在位置，留出1像素是为了防止当a和f重叠时出现View闪烁的情况
+                scroller.startScroll((int) a.x,(int) a.y,(int) (f.x- a.x - 1),(int) (f.y - a.y - 1),400);
                 invalidate();
                 return true;
         }
-
-
         return true;
     }
+
+    @Override
+    public void computeScroll() {
+
+        if (scroller.computeScrollOffset()){
+            a.x = scroller.getCurrX();
+            a.y = scroller.getCurrY();
+            Log.d(TAG,"aax"+a.x);
+            Log.d(TAG,"aay"+a.y);
+            caclData();
+            invalidate();
+            Log.d(TAG,"acscga");
+            if (scroller.getFinalX() == a.x && scroller.getFinalY() == a.y){
+                touch = true;
+                invalidate();
+            }
+        }
+    }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
