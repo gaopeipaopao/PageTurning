@@ -217,12 +217,13 @@ public class PageTurnView extends View{
 
         Log.d(TAG,"cc");
 
-//        if (!cMax){
-//            a.x = event.getX();
-//            a.y = event.getY();
-//        }
-        a.x = event.getX();
-        a.y = event.getY();
+//        a.x = event.getX();
+//        a.y = event.getY();
+
+        if (!cMax){
+            a.x = event.getX();
+            a.y = event.getY();
+        }
 
 
         //只判断一次，在第一次触摸时就会判断是右上翻动还是右下翻动
@@ -249,6 +250,7 @@ public class PageTurnView extends View{
         if (c.x < 0){
             cMax = true;
         }
+
         switch (event.getAction()){
             case MotionEvent.ACTION_MOVE:
                 invalidate();
@@ -256,6 +258,7 @@ public class PageTurnView extends View{
                 return true;
             case MotionEvent.ACTION_UP:
                 touch = true;
+                cMax = false;
                 bRightBottom = false;
                 bRightTop = false;
                 invalidate();
