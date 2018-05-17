@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Picture;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -15,8 +16,16 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.MultiAutoCompleteTextView;
 
 /**
+ * 限制右侧最大的翻页距离
+ * 第一种方法:如果c.x大于0则设置a点坐标重新计算各标识点位置，否则a点坐标不变，
+ * 这个方法会使出现翻页“瞬移”，造成一种卡顿的感觉，
+ * 这是因为c.x小于0时，a的坐标值不变，一直不变，导致绘出来的曲线也一直不变，
+ * 当突然手指移动导致，c.x大于0时，从一种效果突然变化到另一种效果，导致卡顿
+ * 第二种方法:一直在动态的获取临界的a的坐标，每一次移动的c.x不同，得到的临界的a的坐标不同，
+ * 然后一直在重新绘制，没有从一个突然过渡到另一个的状态，不会导致卡顿
  * Created by gaope on 2018/5/14.
  */
 
@@ -217,21 +226,17 @@ public class PageTurnView extends View{
 
         Log.d(TAG,"cc");
 
-//        a.x = event.getX();
-//        a.y = event.getY();
+        float x = event.getX();
+        float y = event.getY();
 
-        if (!cMax){
-            a.x = event.getX();
-            a.y = event.getY();
-        }
 
 
         //只判断一次，在第一次触摸时就会判断是右上翻动还是右下翻动
         if (touch) {
             touch = false;
-            if (a.y <= getHeight() / 3){
+            if (y <= getHeight() / 3){
                 bRightTop = true;
-            } else if (a.y > getHeight() * 2 / 3 && a.y <= getHeight()) {
+            } else if (y > getHeight() * 2 / 3 && y <= getHeight()) {
                 bRightBottom = true;
             }
         }
@@ -245,10 +250,14 @@ public class PageTurnView extends View{
         }
         Log.d(TAG,"a.y:"+a.y);
 
-
+        a.x = x;
+        a.y = y;
         caclData();
-        if (c.x < 0){
-            cMax = true;
+
+        if (caclCX(x,y,f) < 0){
+            //如果c点x坐标小于0则重新测量临界的a点坐标
+            caclCrisisA();
+            caclData();
         }
 
         switch (event.getAction()){
@@ -358,6 +367,36 @@ public class PageTurnView extends View{
         return pathB;
     }
 
+    /**
+     * 计算临界的a点的坐标
+     */
+    private void caclCrisisA(){
+        float w0 = getWidth() - c.x;
+
+        float w1 = Math.abs(f.x - a.x);
+        float w2 = getWidth() * w1 / w0;
+        a.x = Math.abs(f.x - w2);
+
+        float h1 = Math.abs(f.y - a.y);
+        float h2 = w2 * h1 / w1;
+        a.y = Math.abs(f.y - h2);
+    }
+
+    /**
+     *计算c.x的正负
+     */
+    private float caclCX(float x,float y,PointF f){
+        PointF c = new PointF(0,0);
+        g.x = (x + f.x) / 2 ;
+        g.y = (y + f.y) / 2;
+
+        e.x = g.x - (f.y - g.y) * (f.y - g.y) / (f.x - g.x);
+        e.y = f.y;
+
+        c.x = e.x - (f.x - e.x) / 2;
+        c.y = f.y;
+        return c.x;
+    }
 
     /**
      * 计算各个点的坐标
