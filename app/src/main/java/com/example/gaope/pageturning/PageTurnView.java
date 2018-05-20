@@ -11,6 +11,7 @@ import android.graphics.Picture;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Region;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -167,6 +168,12 @@ public class PageTurnView extends View{
     private Scroller scroller;
 
     /**
+     * 内容的画笔
+     */
+    private Paint textPaint;
+
+
+    /**
      *
      * @param context
      * @param attrs
@@ -198,6 +205,14 @@ public class PageTurnView extends View{
         paintA.setAntiAlias(true);
         paintA.setStyle(Paint.Style.FILL);
         paintA.setColor(Color.YELLOW);
+        textPaint = new Paint();
+
+
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        //设置自像素。如果该项为true，将有助于文本在LCD屏幕上的显示效果。
+        textPaint.setSubpixelText(true);
+        textPaint.setTextSize(30);
 
         paintC = new Paint();
         paintC.setAntiAlias(true);
@@ -339,25 +354,40 @@ public class PageTurnView extends View{
         bitmapCanvas = new Canvas(bitmap);
         if (touch){
           //  Log.d(TAG,"aa");
-            bitmapCanvas.drawPath(drawA(),paintA);
+           // bitmapCanvas.drawPath(drawA(),paintA);
+            drawPathAText(bitmapCanvas,drawA(),paintA);
         }else {
           //  Log.d(TAG,"bb");
             //画A区域
             if (f.y == 0){
-                bitmapCanvas.drawPath(drawARightTop(),paintA);
+                //bitmapCanvas.drawPath(drawARightTop(),paintA);
+                drawPathAText(bitmapCanvas,drawARightTop(),paintA);
             }else {
-                bitmapCanvas.drawPath(drawARightBottom(),paintA);
+               // bitmapCanvas.drawPath(drawARightBottom(),paintA);
+                drawPathAText(bitmapCanvas,drawARightBottom(),paintA);
             }
             //画C区域
-            bitmapCanvas.drawPath(drawC(),paintC);
+           // bitmapCanvas.drawPath(drawC(),paintC);
             //画B区域
-            bitmapCanvas.drawPath(drawB(),paintB);
+           // bitmapCanvas.drawPath(drawB(),paintB);
         }
 
         //在画布上导入已经有了的bitmap图片，null表示没有画笔
         canvas.drawBitmap(bitmap,0,0,null);
 
 
+    }
+
+    private void drawPathAText(Canvas canvas,Path path,Paint paint){
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvasBitmapA = new Canvas(bitmap);
+        canvasBitmapA.drawPath(path,paint);
+        canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 100,getHeight() - 500,textPaint);
+        canvas.save();
+        //对绘制内容进行剪裁，取和A区域的交集
+        canvas.clipPath(path,Region.Op.INTERSECT);
+        canvas.drawBitmap(bitmap,0,0,null);
+        canvas.restore();
     }
 
     private Path drawA(){
