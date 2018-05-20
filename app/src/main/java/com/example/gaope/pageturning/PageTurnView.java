@@ -362,14 +362,19 @@ public class PageTurnView extends View{
             if (f.y == 0){
                 //bitmapCanvas.drawPath(drawARightTop(),paintA);
                 drawPathAText(bitmapCanvas,drawARightTop(),paintA);
+                bitmapCanvas.drawPath(drawC(),paintC);
+                drawPathBText(bitmapCanvas,drawARightTop(),paintB);
             }else {
                // bitmapCanvas.drawPath(drawARightBottom(),paintA);
                 drawPathAText(bitmapCanvas,drawARightBottom(),paintA);
+                bitmapCanvas.drawPath(drawC(),paintC);
+                drawPathBText(bitmapCanvas,drawARightBottom(),paintB);
             }
             //画C区域
-           // bitmapCanvas.drawPath(drawC(),paintC);
+//            bitmapCanvas.drawPath(drawC(),paintC);
             //画B区域
            // bitmapCanvas.drawPath(drawB(),paintB);
+            //drawPathBText(bitmapCanvas,drawB(),paintB);
         }
 
         //在画布上导入已经有了的bitmap图片，null表示没有画笔
@@ -382,10 +387,24 @@ public class PageTurnView extends View{
         Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvasBitmapA = new Canvas(bitmap);
         canvasBitmapA.drawPath(path,paint);
-        canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 100,getHeight() - 500,textPaint);
+        canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
         canvas.save();
         //对绘制内容进行剪裁，取和A区域的交集
         canvas.clipPath(path,Region.Op.INTERSECT);
+        canvas.drawBitmap(bitmap,0,0,null);
+        canvas.restore();
+    }
+
+    private void drawPathBText(Canvas canvas,Path pathA,Paint paint){
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvasBitmapA = new Canvas(bitmap);
+        canvasBitmapA.drawPath(drawB(),paint);
+        canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
+        canvas.save();
+        //对绘制内容进行剪裁，取和A区域的交集
+        canvas.clipPath(pathA);
+        canvas.clipPath(drawC(),Region.Op.UNION);
+        canvas.clipPath(pathB,Region.Op.REVERSE_DIFFERENCE);
         canvas.drawBitmap(bitmap,0,0,null);
         canvas.restore();
     }
