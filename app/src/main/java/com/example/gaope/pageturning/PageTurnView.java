@@ -363,13 +363,15 @@ public class PageTurnView extends View{
             if (f.y == 0){
                 //bitmapCanvas.drawPath(drawARightTop(),paintA);
                 drawPathAText(bitmapCanvas,drawARightTop(),paintA);
+                bitmapCanvas.drawPath(drawC(),paintC);
                 //bitmapCanvas.drawPath(drawC(),paintC);
                 drawPathCText(bitmapCanvas,drawARightTop(),paint);
                 drawPathBText(bitmapCanvas,drawARightTop(),paintB);
             }else {
                // bitmapCanvas.drawPath(drawARightBottom(),paintA);
                 drawPathAText(bitmapCanvas,drawARightBottom(),paintA);
-                //bitmapCanvas.drawPath(drawC(),paintC);
+                bitmapCanvas.drawPath(drawC(),paintC);
+               // bitmapCanvas.drawPath(drawC(),paintC);
                 drawPathCText(bitmapCanvas,drawARightBottom(),paint);
                 drawPathBText(bitmapCanvas,drawARightBottom(),paintB);
             }
@@ -390,7 +392,7 @@ public class PageTurnView extends View{
         Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.RGB_565);
         Canvas canvasBitmapA = new Canvas(bitmap);
         canvasBitmapA.drawPath(path,paint);
-        canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
+        canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 260,getHeight() - 100,textPaint);
         //调用canvas.save()来保存画布当前的状态，当操作之后取出之前保存过的状态，这样就不会对其他的元素进行影响
         canvas.save();
         //对绘制内容进行剪裁，取和A区域的交集
@@ -403,7 +405,7 @@ public class PageTurnView extends View{
         Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvasBitmapB = new Canvas(bitmap);
         canvasBitmapB.drawPath(drawB(),paint);
-        canvasBitmapB.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
+        canvasBitmapB.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 260,getHeight() - 100,textPaint);
         canvas.save();
         //裁剪出A区域
         canvas.clipPath(pathA);
@@ -419,14 +421,15 @@ public class PageTurnView extends View{
         Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.RGB_565);
         Canvas canvasBitmapC = new Canvas(bitmap);
         canvasBitmapC.drawPath(drawB(),paint);
-        canvasBitmapC.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
+        canvasBitmapC.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 260,getHeight() - 100,textPaint);
+
         canvas.save();
         canvas.clipPath(pathA);
         //裁剪出C区域不同于A区域的部分
         canvas.clipPath(drawC(),Region.Op.REVERSE_DIFFERENCE);
-        float ef = (float) Math.hypot(f.x - e.x,f.y - h.y);
+        float ef = (float) Math.hypot(f.x - e.x,h.y - f.y);
         float sina = (f.x - e.x) / ef;
-        float cosa = (f.y - h.y) / ef;
+        float cosa = (h.y - f.y) / ef;
         float tana = sina / cosa;
         float a = (float) Math.atan(tana);
         Log.d(TAG,"sina:"+sina);
@@ -440,7 +443,7 @@ public class PageTurnView extends View{
 //        matrix.postTranslate(-e.x,-e.y);
 //        matrix.postTranslate(e.x,e.y);
 
-        float[] matrixValue = {0,0,0,0,0,0,0,0, (float) 1.0};
+        float[] matrixValue = { 0, 0, 0, 0, 0 ,0, 0, 0, 1.0f };
         matrixValue[0] = -(1 - 2 * sina * sina);
         matrixValue[1] = 2 * sina * cosa;
         matrixValue[3] = 2 * sina * cosa;
