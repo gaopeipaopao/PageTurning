@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Picture;
@@ -194,7 +195,7 @@ public class PageTurnView extends View{
 
         paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.YELLOW);
+        paint.setColor(Color.RED);
         paint.setAntiAlias(true);
 
         pathA = new Path();
@@ -362,12 +363,14 @@ public class PageTurnView extends View{
             if (f.y == 0){
                 //bitmapCanvas.drawPath(drawARightTop(),paintA);
                 drawPathAText(bitmapCanvas,drawARightTop(),paintA);
-                bitmapCanvas.drawPath(drawC(),paintC);
+                //bitmapCanvas.drawPath(drawC(),paintC);
+                drawPathCText(bitmapCanvas,drawARightTop(),paint);
                 drawPathBText(bitmapCanvas,drawARightTop(),paintB);
             }else {
                // bitmapCanvas.drawPath(drawARightBottom(),paintA);
                 drawPathAText(bitmapCanvas,drawARightBottom(),paintA);
-                bitmapCanvas.drawPath(drawC(),paintC);
+                //bitmapCanvas.drawPath(drawC(),paintC);
+                drawPathCText(bitmapCanvas,drawARightBottom(),paint);
                 drawPathBText(bitmapCanvas,drawARightBottom(),paintB);
             }
             //画C区域
@@ -384,10 +387,11 @@ public class PageTurnView extends View{
     }
 
     private void drawPathAText(Canvas canvas,Path path,Paint paint){
-        Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.RGB_565);
         Canvas canvasBitmapA = new Canvas(bitmap);
         canvasBitmapA.drawPath(path,paint);
         canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
+        //调用canvas.save()来保存画布当前的状态，当操作之后取出之前保存过的状态，这样就不会对其他的元素进行影响
         canvas.save();
         //对绘制内容进行剪裁，取和A区域的交集
         canvas.clipPath(path,Region.Op.INTERSECT);
@@ -397,15 +401,64 @@ public class PageTurnView extends View{
 
     private void drawPathBText(Canvas canvas,Path pathA,Paint paint){
         Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvasBitmapA = new Canvas(bitmap);
-        canvasBitmapA.drawPath(drawB(),paint);
-        canvasBitmapA.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
+        Canvas canvasBitmapB = new Canvas(bitmap);
+        canvasBitmapB.drawPath(drawB(),paint);
+        canvasBitmapB.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
         canvas.save();
-        //对绘制内容进行剪裁，取和A区域的交集
+        //裁剪出A区域
         canvas.clipPath(pathA);
+        //裁剪出A和C区域的全集
         canvas.clipPath(drawC(),Region.Op.UNION);
+        //裁剪出B区域中不同于与AC区域的部分
         canvas.clipPath(pathB,Region.Op.REVERSE_DIFFERENCE);
         canvas.drawBitmap(bitmap,0,0,null);
+        canvas.restore();
+    }
+
+    private void drawPathCText(Canvas canvas,Path pathA,Paint paint){
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.RGB_565);
+        Canvas canvasBitmapC = new Canvas(bitmap);
+        canvasBitmapC.drawPath(drawB(),paint);
+        canvasBitmapC.drawText("脆皮鸭啊啊啊啊啊",getWidth() - 300,getHeight() - 500,textPaint);
+        canvas.save();
+        canvas.clipPath(pathA);
+        //裁剪出C区域不同于A区域的部分
+        canvas.clipPath(drawC(),Region.Op.REVERSE_DIFFERENCE);
+        float ef = (float) Math.hypot(f.x - e.x,f.y - h.y);
+        float sina = (f.x - e.x) / ef;
+        float cosa = (f.y - h.y) / ef;
+        float tana = sina / cosa;
+        float a = (float) Math.atan(tana);
+        Log.d(TAG,"sina:"+sina);
+        Log.d(TAG,"cosa:"+cosa);
+        Log.d(TAG,"aaa:" + 2 * Math.toDegrees(a));
+        Matrix matrix = new Matrix();
+        matrix.reset();
+//        //使用post，越靠前越先执行。
+//        matrix.postScale(-1,1);
+//        matrix.postRotate(- 2 * a);
+//        matrix.postTranslate(-e.x,-e.y);
+//        matrix.postTranslate(e.x,e.y);
+
+        float[] matrixValue = {0,0,0,0,0,0,0,0, (float) 1.0};
+        matrixValue[0] = -(1 - 2 * sina * sina);
+        matrixValue[1] = 2 * sina * cosa;
+        matrixValue[3] = 2 * sina * cosa;
+        matrixValue[4] = 1 - 2 * sina * sina;
+        Log.d(TAG,"pingfang"+(matrixValue[3] * matrixValue[3] + matrixValue[4] * matrixValue[4]));
+        Log.d(TAG,"va0:" + matrixValue[0] + "   va1:" + matrixValue[1] + "   va3:" + matrixValue[3] + "   va4:" + matrixValue[4]);
+//        Matrix matrix = new Matrix();
+//        matrix.reset();
+        matrix.setValues(matrixValue);
+        Log.d(TAG,"matrix:"+matrix.toString());
+        matrix.preTranslate(-e.x,-e.y);
+        Log.d(TAG,"matrix1:"+matrix.toString());
+        matrix.postTranslate(e.x,e.y);
+        Log.d(TAG,"matrix2:"+matrix.toString());
+        Log.d(TAG,"matrix,e.x:"+e.x);
+        Log.d(TAG,"matrix,e.y:"+e.y);
+
+        canvas.drawBitmap(bitmap,matrix,null);
         canvas.restore();
     }
 
