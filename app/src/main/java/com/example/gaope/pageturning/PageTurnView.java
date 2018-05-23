@@ -13,6 +13,7 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Region;
+import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -414,8 +415,60 @@ public class PageTurnView extends View{
         //裁剪出B区域中不同于与AC区域的部分
         canvas.clipPath(pathB,Region.Op.REVERSE_DIFFERENCE);
         canvas.drawBitmap(bitmap,0,0,null);
+//        canvas.restore();
+//        canvas.save();
+        drawBShadow(canvas);
         canvas.restore();
     }
+
+    private void drawBShadow(Canvas canvas) {
+        //深色端的颜色
+        int deepColor = 0xff111111;
+        //浅色端的颜色
+        int lightColor = 0x00111111;
+        int[] gradientColors = new int[]{deepColor,lightColor};
+
+        //a到f的距离
+        float aAndFLength = (float) Math.hypot((a.x - f.x),(a.y - f.y));
+        //对角线的长度
+        float diagonalLength = (float) Math.hypot(getWidth(),getHeight());
+
+        Log.d(TAG,"aaAndFLength:"+aAndFLength);
+        Log.d(TAG,"aaAndFLength4:"+aAndFLength/4);
+
+        //确定阴影矩形的坐标
+        int left;
+        int right;
+        int top = (int) c.y;
+        int bottom = (int) (c.y + diagonalLength);
+
+        //生成GradientDrawable对象
+        GradientDrawable gradientDrawable;
+
+        //f点在右上角，从左到右渐变
+        if (f.y == 0){
+            gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,gradientColors);
+            //线性渐变
+            gradientDrawable.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+            left = (int) c.x;
+            right = (int) (c.x + aAndFLength/4);
+        }else {
+            //f点在右下角，从右到左渐变
+            gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT,gradientColors);
+            //线性渐变
+            gradientDrawable.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+            left = (int) (c.x - aAndFLength/4);
+            right = (int) c.x ;
+        }
+        gradientDrawable.setBounds(left,top,right,bottom);
+        //旋转角度
+        float rotateDegress = (float) Math.toDegrees(Math.atan2(e.x - f.x,h.y - f.y));
+        Log.d(TAG,"rotate:"+rotateDegress);
+        //以c为中心点旋转
+        canvas.rotate(rotateDegress,c.x,c.y);
+        gradientDrawable.draw(canvas);
+    }
+
 
     private void drawPathCText(Canvas canvas,Path pathA,Paint paint){
         Bitmap bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.RGB_565);
