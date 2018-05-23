@@ -244,8 +244,8 @@ public class PageTurnView extends View{
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.d(TAG,"width:"+w);
-        Log.d(TAG,"height:"+h);
+//        Log.d(TAG,"width:"+w);
+//        Log.d(TAG,"height:"+h);
         a.x = w;
         a.y = h;
     }
@@ -260,8 +260,8 @@ public class PageTurnView extends View{
 
         float x = event.getX();
         float y = event.getY();
-        Log.d(TAG,"x:"+x);
-        Log.d(TAG,"y:"+y);
+//        Log.d(TAG,"x:"+x);
+//        Log.d(TAG,"y:"+y);
 
 
 
@@ -289,7 +289,7 @@ public class PageTurnView extends View{
         a.y = y;
 
 
-        Log.d(TAG,"a.y:"+a.y);
+//        Log.d(TAG,"a.y:"+a.y);
 
         caclData();
 
@@ -515,7 +515,78 @@ public class PageTurnView extends View{
         Log.d(TAG,"matrix,e.y:"+e.y);
 
         canvas.drawBitmap(bitmap,matrix,null);
+//        canvas.restore();
+//        canvas.save();
+        drawCShadow(canvas);
         canvas.restore();
+    }
+
+    private void drawCShadow(Canvas canvas) {
+        //深色端的颜色
+        int deepColor = 0xff111111;
+        //浅色端的颜色
+        int lightColor = 0x00333333;
+        int[] gradientColors = new int[]{lightColor,deepColor};
+
+        //深色端的偏移值
+        int deepOffset = 1;
+        //浅色端的偏移值
+        int lightOffset = -30;
+
+//        //a到f的距离
+//        float aAndFLength = (float) Math.hypot((a.x - f.x),(a.y - f.y));
+        //对角线的长度
+        float diagonalLength = (float) Math.hypot(getWidth(),getHeight());
+
+        int midpoint_ce = (int) (c.x + e.x) / 2;//ce中点
+        int midpoint_jh = (int) (j.y + h.y) / 2;//jh中点
+        //中点到控制点的最小值
+        float minDisToControlPoint = Math.min(Math.abs(midpoint_ce - e.x), Math.abs(midpoint_jh - h.y));
+
+        //确定阴影矩形的坐标
+        int left;
+        int right;
+        int top = (int) c.y;
+        //绘制C阴影时，c.y + diagonalLength
+        int bottom = (int) (c.y + diagonalLength);
+
+        //生成GradientDrawable对象
+        GradientDrawable gradientDrawable;
+
+        //f点在右上角，从左到右渐变
+        if (f.y == 0){
+            gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,gradientColors);
+            //线性渐变
+            gradientDrawable.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+
+            //借助偏移量让矩形右移
+            left = (int) c.x - lightOffset;
+            right = (int) (c.x + minDisToControlPoint + deepOffset);
+
+            Log.d(TAG,"c.xaa:"+c.x);
+            Log.d(TAG,"left:"+left);
+            Log.d(TAG,"right:"+right);
+        }else {
+            //f点在右下角，从右到左渐变
+            gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT,gradientColors);
+            //线性渐变
+            gradientDrawable.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+
+            //借助偏移量让矩形左移
+            left = (int) (c.x - minDisToControlPoint - deepOffset);
+            right = (int) (c.x + lightOffset);
+
+            Log.d(TAG,"c.xaa:"+c.x);
+            Log.d(TAG,"left:"+left);
+            Log.d(TAG,"right:"+right);
+        }
+        gradientDrawable.setBounds(left,top,right,bottom);
+        //旋转角度
+        float rotateDegress = (float) Math.toDegrees(Math.atan2(e.x - f.x,h.y - f.y));
+        Log.d(TAG,"rotate:"+rotateDegress);
+        //以c为中心点旋转
+        canvas.rotate(rotateDegress,c.x,c.y);
+        gradientDrawable.draw(canvas);
     }
 
     private Path drawA(){
@@ -637,26 +708,26 @@ public class PageTurnView extends View{
         i.y = ((k.y + j.y)/2 + h.y)/2;
 
 
-        Log.d(TAG,"a.x:"+a.x);
-        Log.d(TAG,"a.y:"+a.y);
-        Log.d(TAG,"f.x:"+f.x);
-        Log.d(TAG,"g.x:"+g.x);
-        Log.d(TAG,"e.x:"+e.x);
-        Log.d(TAG,"e.y:"+e.y);
-        Log.d(TAG,"h.x:"+h.x);
-        Log.d(TAG,"h.y:"+h.y);
-        Log.d(TAG,"c.x:"+c.x);
-        Log.d(TAG,"c.y:"+c.y);
-        Log.d(TAG,"j.x:"+j.x);
-        Log.d(TAG,"j.y:"+j.y);
-        Log.d(TAG,"d.x:"+d.x);
-        Log.d(TAG,"d.y:"+d.y);
-        Log.d(TAG,"i.x:"+i.x);
-        Log.d(TAG,"i.y:"+i.y);
-        Log.d(TAG,"b.x:"+b.x);
-        Log.d(TAG,"b.y:"+b.y);
-        Log.d(TAG,"k.x:"+k.x);
-        Log.d(TAG,"k.y:"+k.y);
+//        Log.d(TAG,"a.x:"+a.x);
+//        Log.d(TAG,"a.y:"+a.y);
+//        Log.d(TAG,"f.x:"+f.x);
+//        Log.d(TAG,"g.x:"+g.x);
+//        Log.d(TAG,"e.x:"+e.x);
+//        Log.d(TAG,"e.y:"+e.y);
+//        Log.d(TAG,"h.x:"+h.x);
+//        Log.d(TAG,"h.y:"+h.y);
+//        Log.d(TAG,"c.x:"+c.x);
+//        Log.d(TAG,"c.y:"+c.y);
+//        Log.d(TAG,"j.x:"+j.x);
+//        Log.d(TAG,"j.y:"+j.y);
+//        Log.d(TAG,"d.x:"+d.x);
+//        Log.d(TAG,"d.y:"+d.y);
+//        Log.d(TAG,"i.x:"+i.x);
+//        Log.d(TAG,"i.y:"+i.y);
+//        Log.d(TAG,"b.x:"+b.x);
+//        Log.d(TAG,"b.y:"+b.y);
+//        Log.d(TAG,"k.x:"+k.x);
+//        Log.d(TAG,"k.y:"+k.y);
 
     }
 
